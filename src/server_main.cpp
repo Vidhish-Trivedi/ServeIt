@@ -1,45 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <string.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <arpa/inet.h>
-#include <stdint.h>
-#include <errno.h>
-
-static void die(const char *msg) {
-    int err = errno;
-    fprintf(stderr, "[%d] %s\n", err, msg);
-    abort();
-}
-
-static void msg(const char *msg) {
-    fprintf(stderr, "%s\n", msg);
-}
-
-static void read_write(int connfd)
-{
-    char rbuf[64] = {};
-    ssize_t n = read(connfd, rbuf, sizeof(rbuf) - 1);
-    if (n < 0)
-    {
-        msg("read() error");
-        return;
-    }
-    printf("client says: %s\n", rbuf);
-
-    char wbuf[] = "world";
-    ssize_t r = write(connfd, wbuf, strlen(wbuf));
-    if (r < 0)
-    {
-        die("write(): unsuccessful");
-    }
-}
+#include "./../header/server.h"
 
 int main()
 {
@@ -78,7 +37,15 @@ int main()
         }
 
         // Perform operations.
-        read_write(connfd);
+        // read_write_test(connfd);
+
+        // only serves one client connection at once
+        while (true) {
+            int32_t err = one_request(connfd);
+            if (err) {
+                break;
+            }
+        }
 
         close(connfd);
     }

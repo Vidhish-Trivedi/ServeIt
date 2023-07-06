@@ -1,22 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <string.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <arpa/inet.h>
-#include <stdint.h>
-#include <errno.h>
-
-static void die(const char *msg) {
-    int err = errno;
-    fprintf(stderr, "[%d] %s\n", err, msg);
-    abort();
-}
+#include "./../header/client.h"
 
 int main()
 {
@@ -50,8 +32,28 @@ int main()
         die("read(): unsuccessful");
     }
     printf("server says: %s\n", rbuf);
-    
-    close(fd);
 
+    // Code to test the query function.
+    while (true)
+    {
+        int32_t err = query(fd, "hello1");
+        if (err)
+        {
+            break;
+        }
+        err = query(fd, "hello2");
+        if (err)
+        {
+            break;
+        }
+        err = query(fd, "hello3");
+        if (err)
+        {
+            break;
+        }
+        break;
+    }
+
+    close(fd);
     return 0;
 }
