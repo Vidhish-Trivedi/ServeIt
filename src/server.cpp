@@ -1,7 +1,7 @@
 #include "./../header/server.h"
 
 // Reads the incoming request. If valid, responds with "world".
-static int32_t one_request(int connfd) {
+int32_t one_request(int connfd) {
     // 4 bytes header
     char rbuf[4 + k_max_msg + 1];
     errno = 0;
@@ -17,6 +17,7 @@ static int32_t one_request(int connfd) {
 
     uint32_t len = 0;
     memcpy(&len, rbuf, 4);  // assume little endian
+
     if (len > k_max_msg) {
         msg("too long");
         return -1;

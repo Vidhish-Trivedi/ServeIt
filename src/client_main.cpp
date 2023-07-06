@@ -18,21 +18,6 @@ int main()
         die("connect(): unsuccessful");
     }
 
-    char msg[] = "hello";
-    ssize_t r = write(fd, msg, strlen(msg));
-    if (r < 0)
-    {
-        die("write(): unsuccessful");
-    }
-
-    char rbuf[64] = {};
-    ssize_t n = read(fd, rbuf, sizeof(rbuf) - 1);
-    if (n < 0)
-    {
-        die("read(): unsuccessful");
-    }
-    printf("server says: %s\n", rbuf);
-
     // Code to test the query function.
     while (true)
     {
