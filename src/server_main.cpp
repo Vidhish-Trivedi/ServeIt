@@ -1,4 +1,8 @@
 #include "./../header/server.h"
+#include <vector>
+#include <iostream>
+#include <poll.h>
+#include "./../header/conn.h"
 
 int main()
 {
@@ -25,29 +29,89 @@ int main()
         die("listen(): unsuccessful");
     }
 
+    // map from fd to connection.
+    std::vector<struct Conn *> fd_to_conn;
+
+    // Set the listen fd to non-blocking mode.
+    fd_set_nb(fd);
+
+    // The event loop.
+    std::vector<struct pollfd> poll_args;
+
     while (true)
     {
-        // accept
-        struct sockaddr_in client_addr = {};
-        socklen_t socklen = sizeof(client_addr);
-        int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
-        if (connfd < 0)
+        // Prepare arguments of poll.
+        poll_args.clear();
+        struct pollfd pfd = {fd, POLLIN, 0}; // Listening fd is in first position.
+        poll_args.push_back(pfd);
+
+        // Connection fds.
+        for (struct Conn *conn : fd_to_conn)
         {
-            continue; // error
+            if (!conn)
+            {
+                continue;
+            }
+            struct pollfd pfd = {};
+            pfd.fd = conn->fd;
+            pfd.events = (conn->state == STATE_REQ) ? POLLIN : POLLOUT;
+            pfd.events = pfd.events | POLLERR;
+            poll_args.push_back(pfd);
         }
 
-        // Perform operations.
-        // read_write_test(connfd);
+        // Poll for active fds.
+        int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), 1000);    // Ignore timeout for now.
+        if (rv < 0)
+        {
+            die("poll(): unsuccessful");
+        }
 
-        // only serves one client connection at once
-        while (true) {
-            int32_t err = one_request(connfd);
-            if (err) {
-                break;
+        // Process active connections.
+        for (size_t i = 1; i < poll_args.size(); ++i)
+        {
+            if (poll_args[i].revents)
+            {
+                Conn *conn = fd_to_conn[poll_args[i].fd];
+                connection_io(conn);
+
+                if (conn->state == STATE_END)
+                {
+                    // client closed normally, or something bad happened.
+                    // destroy this connection
+                    fd_to_conn[conn->fd] = NULL;
+                    (void)close(conn->fd);
+                    free(conn);
+                }
             }
         }
 
-        // close(connfd);
+        // Check and accept a new connection if the listening fd is active.
+        if (poll_args[0].revents)
+        {
+            (void)accept_new_conn(fd_to_conn, fd);
+        }
+
+        // // accept
+        // struct sockaddr_in client_addr = {};
+        // socklen_t socklen = sizeof(client_addr);
+        // int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
+        // if (connfd < 0)
+        // {
+        //     continue; // error
+        // }
+
+        // // Perform operations.
+        // // read_write_test(connfd);
+
+        // // only serves one client connection at once
+        // while (true) {
+        //     int32_t err = one_request(connfd);
+        //     if (err) {
+        //         break;
+        //     }
+        // }
+
+        // // close(connfd);
     }
 
     return 0;

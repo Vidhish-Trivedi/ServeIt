@@ -1,7 +1,7 @@
 #include "./../header/server.h"
 
 // Reads the incoming request. If valid, responds with "world".
-int32_t one_request(int connfd) {
+ int32_t one_request(int connfd) {
     // 4 bytes header
     char rbuf[4 + k_max_msg + 1];
     errno = 0;

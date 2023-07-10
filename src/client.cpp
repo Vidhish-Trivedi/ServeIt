@@ -1,7 +1,7 @@
 #include "./../header/client.h"
 
 // Query function implementing our protocol.
-int32_t query(int fd, const char *text) {
+ int32_t query(int fd, const char *text) {
     uint32_t len = (uint32_t)strlen(text);
     
     if (len > k_max_msg) {
