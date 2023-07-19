@@ -19,24 +19,21 @@ int main()
     }
 
     // Code to test the query function.
-    while (true)
-    {
-        int32_t err = query(fd, "hello1");
-        if (err)
-        {
-            break;
+    const char* query_list[3] = {"hello1", "hello2", "hello3"};
+    for(size_t i = 0; i < 3; i++) {
+        int32_t err = send_req(fd, query_list[i]);
+        if(err) {
+            close(fd);
+            return(0);
         }
-        err = query(fd, "hello2");
-        if (err)
-        {
-            break;
+    }
+
+    for(size_t i = 0; i < 3; i++) {
+        int32_t err = read_res(fd);
+        if(err) {
+            close(fd);
+            return(0);
         }
-        err = query(fd, "hello3");
-        if (err)
-        {
-            break;
-        }
-        break;
     }
 
     close(fd);
