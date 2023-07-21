@@ -1,6 +1,6 @@
 #include "./../header/client.h"
 
-int main()
+int main(int argc, char **argv)
 {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0)
@@ -19,21 +19,21 @@ int main()
     }
 
     // Code to test the query function.
-    const char* query_list[3] = {"hello1", "hello2", "hello3"};
-    for(size_t i = 0; i < 3; i++) {
-        int32_t err = send_req(fd, query_list[i]);
-        if(err) {
-            close(fd);
-            return(0);
-        }
+    std::vector<std::string> command;
+    for(size_t i = 0; i < argc; i++) {
+        command.push_back(argv[i]);
     }
 
-    for(size_t i = 0; i < 3; i++) {
-        int32_t err = read_res(fd);
-        if(err) {
-            close(fd);
-            return(0);
-        }
+    int32_t err = send_req(fd, command);
+    if(err) {
+        close(fd);
+        return(0);
+    }
+
+    err = read_res(fd);
+    if(err) {
+        close(fd);
+        return(0);
     }
 
     close(fd);

@@ -16,7 +16,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-void read_write_test(int connfd);
 // Fix max size of one request.
 const size_t k_max_msg = 4096;
 void die(const char *msg);

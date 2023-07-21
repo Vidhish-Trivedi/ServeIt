@@ -90,28 +90,6 @@ int main()
         {
             (void)accept_new_conn(fd_to_conn, fd);
         }
-
-        // // accept
-        // struct sockaddr_in client_addr = {};
-        // socklen_t socklen = sizeof(client_addr);
-        // int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
-        // if (connfd < 0)
-        // {
-        //     continue; // error
-        // }
-
-        // // Perform operations.
-        // // read_write_test(connfd);
-
-        // // only serves one client connection at once
-        // while (true) {
-        //     int32_t err = one_request(connfd);
-        //     if (err) {
-        //         break;
-        //     }
-        // }
-
-        // // close(connfd);
     }
 
     return 0;
