@@ -104,7 +104,7 @@ uint32_t do_get(const std::vector<std::string> &cmd, uint8_t *res, uint32_t *res
         return(RES_NX);
     }
     std::string &val = g_map[cmd[1]];
-    std::cout << "test val: " << val.data() << std::endl;
+    std::cout << "---------------test val: " << val.data() << std::endl;
     assert(val.size() <= k_max_msg);
     memcpy(res, val.data(), val.size());
     *reslen = (uint32_t)val.size();
@@ -115,7 +115,7 @@ uint32_t do_get(const std::vector<std::string> &cmd, uint8_t *res, uint32_t *res
 uint32_t do_set(const std::vector<std::string> &cmd, uint8_t *res, uint32_t *reslen) {
     (void)res;
     (void)reslen;
-    g_map[cmd[1]] == cmd[2];
+    g_map[cmd[1]] = cmd[2];
     return(RES_OK);
 }
 
