@@ -10,7 +10,7 @@
         if (errno == 0) {
             msg("EOF");
         } else {
-            msg("read() error1");
+            msg("read() error");
         }
         return err;
     }
@@ -26,7 +26,7 @@
     // request body
     err = read_full(connfd, &rbuf[4], len);
     if (err) {
-        msg("read() error2");
+        msg("read() error");
         return err;
     }
 

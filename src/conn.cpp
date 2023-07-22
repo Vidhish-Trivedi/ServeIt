@@ -1,4 +1,8 @@
 #include "./../header/conn.h"
+#include <iostream>
+
+// Data structure for the key space. May be replaced in future.
+std::map<std::string, std::string> g_map;
 
 void conn_put(std::vector<Conn *> &fd2conn, struct Conn *conn)
 {
@@ -49,6 +53,7 @@ bool try_fill_buffer(Conn *conn)
     {
         size_t cap = sizeof(conn->rbuf) - conn->rbuf_size;
         rv = read(conn->fd, &conn->rbuf[conn->rbuf_size], cap);
+        printf("rv: %ld\n", rv);
     } while (rv < 0 && errno == EINTR);
     if (rv < 0 && errno == EAGAIN)
     {
@@ -80,7 +85,6 @@ bool try_fill_buffer(Conn *conn)
     assert(conn->rbuf_size <= sizeof(conn->rbuf));
 
     // Try to process requests one by one.
-    // Why is there a loop? Please read the explanation of "pipelining".
     while (try_one_request(conn))
     {
     }
@@ -96,12 +100,15 @@ void state_req(Conn *conn)
 
 uint32_t do_get(const std::vector<std::string> &cmd, uint8_t *res, uint32_t *reslen) {
     if(!g_map.count(cmd[1])) {
+        msg("get not ok");
         return(RES_NX);
     }
     std::string &val = g_map[cmd[1]];
+    std::cout << "test val: " << val.data() << std::endl;
     assert(val.size() <= k_max_msg);
     memcpy(res, val.data(), val.size());
     *reslen = (uint32_t)val.size();
+    msg("get ok");
     return(RES_OK);
 }
 
@@ -120,6 +127,7 @@ uint32_t do_del(const std::vector<std::string> &cmd, uint8_t *res, uint32_t *res
 }
 
 bool cmd_is(const std::string &word, const char *cmd) {
+    printf("test1: %s\ntest2: %s\n", cmd, word.c_str());
     return(0 == strcasecmp(word.c_str(), cmd));
 }
 
@@ -134,14 +142,17 @@ int32_t do_request(const uint8_t *req, uint32_t reqlen, uint32_t *rescode, uint8
 
     if (command.size() == 2 && cmd_is(command[0], "get"))
     {
+        printf("in get\n");
         *rescode = do_get(command, res, reslen);
     }
     else if (command.size() == 3 && cmd_is(command[0], "set"))
     {
+        printf("in set\n");
         *rescode = do_set(command, res, reslen);
     }
     else if (command.size() == 2 && cmd_is(command[0], "del"))
     {
+        printf("in del\n");
         *rescode = do_del(command, res, reslen);
     }
     else
@@ -202,7 +213,9 @@ bool try_one_request(Conn *conn)
         return false;
     }
     uint32_t len = 0;
+
     memcpy(&len, &conn->rbuf[0], 4);
+    printf("try_one_request len: %d\n", len);
     if (len > k_max_msg)
     {
         msg("too long");
@@ -216,7 +229,6 @@ bool try_one_request(Conn *conn)
     }
 
     // Receive one request, generate a response.
-    printf("client says: %.*s\n", len, &conn->rbuf[4]);
     uint32_t rescode = 0;
     uint32_t wlen = 0;
     int32_t err = do_request(&conn->rbuf[4], len, &rescode, &conn->wbuf[4 + 4], &wlen);
@@ -225,6 +237,8 @@ bool try_one_request(Conn *conn)
         conn->state = STATE_END;
         return (false);
     }
+
+    printf("rescode: %d\n", rescode);
 
     wlen += 4;
     memcpy(&conn->wbuf[0], &wlen, 4);

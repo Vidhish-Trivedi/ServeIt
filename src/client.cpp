@@ -27,7 +27,6 @@ int32_t send_req(int fd, const std::vector<std::string> &cmd)
         memcpy(&wbuf[cur + 4], s.data(), s.size());
         cur += 4 + s.size();
     }
-
     return (write_all(fd, wbuf, 4 + len));
 }
 
@@ -58,11 +57,19 @@ int32_t read_res(int fd)
         return -1;
     }
 
+    // reply body
+    err = read_full(fd, &rbuf[4], len);
+    if (err)
+    {
+        msg("read() error");
+        return err;
+    }
+
     // print the result
     uint32_t rescode = 0;
     if (len < 4)
     {
-        msg("Bad Response");
+        msg("bad response");
         return -1;
     }
     memcpy(&rescode, &rbuf[4], 4);

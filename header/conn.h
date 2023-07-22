@@ -38,9 +38,6 @@ struct Conn
 
 const size_t k_max_args = 1024;
 
-// Data structure for the key space. May be replaced in future.
-static std::map<std::string, std::string> g_map;
-
 void conn_put(std::vector<Conn *> &fd2conn, struct Conn *conn);
 int32_t accept_new_conn(std::vector<Conn *> &fd2conn, int fd);
 bool try_fill_buffer(Conn *conn);

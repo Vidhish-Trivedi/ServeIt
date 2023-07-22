@@ -8,7 +8,7 @@ int main(int argc, char **argv)
         die("socket(): unsuccessful");
     }
 
-    struct sockaddr_in addr = {};
+    struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = ntohs(1234);
     addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK); // 127.0.0.1
@@ -20,22 +20,24 @@ int main(int argc, char **argv)
 
     // Code to test the query function.
     std::vector<std::string> command;
-    for(size_t i = 0; i < argc; i++) {
+    for(size_t i = 1; i < argc; ++i) {
         command.push_back(argv[i]);
     }
 
     int32_t err = send_req(fd, command);
     if(err) {
-        close(fd);
-        return(0);
+        goto L_DONE;
     }
 
     err = read_res(fd);
     if(err) {
-        close(fd);
-        return(0);
+        msg("e2");
+        printf("%d\n", err);
+        goto L_DONE;
     }
+    
 
+L_DONE:
     close(fd);
     return 0;
 }
