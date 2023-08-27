@@ -136,3 +136,10 @@ HNode *hm_del(HMap *hmap, HNode *key, bool (*cmp)(HNode *, HNode *)) {
 
     return(NULL);
 }
+
+void hm_destroy(HMap *hmap) {
+    assert(hmap->ht1.size + hmap->ht2.size == 0);
+    free(hmap->ht1.table);
+    free(hmap->ht2.table);
+    *hmap = HMap{};
+}
